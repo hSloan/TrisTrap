@@ -2,26 +2,41 @@
 #encripScript
 
 #Step1 Generate a plain text file (boobie trap) in a shared directory
-touch password.txt
 FNAME=password.txt
-touch logTrap.txt
+if [ ! -f $FNAME ]; then 
+  touch password.txt
+fi
+#Generate log file
 LOGT=logTrap.txt
+if [ ! -f $FNAME ]; then 
+  touch logTrap.txt
+fi
+#write random key to file if file is empty
 myRandKey=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-echo $myRandKey > $FNAME
+if [ -s $FNAME ]; then 
+  echo $myRandKey > $FNAME
+fi
   
 #Step2 - Generate md5 hash for the text file and store a string copy(master record) in another text file
 md5sum $FNAME > password.txt
 EncFNAME=password.txt
 
 targetDir=$1 
-cp password.txt $1
 trapPath="$1/password.txt"
+if [ ! -f $trapPath ]; then 
+  cp password.txt $1
+fi
 
 #Step3 Compare hash on the boobie trap with the string file(master record)
 #every n seconds Step 4 write results to log file.   
 
 logFunc() {
-   cksum $EncFNAME $trapPath >> logTrap.txt
+   echo "$(date)" >> logTrap.txt | cksum $EncFNAME $trapPath >> logTrap.txt
+   if diff $EncFNAME $trapPath >/dev/null ; then
+     echo "\nThe files are the same" >> logTrap.txt
+   else
+     echo "\nWARNING!: The files are different" >> logTrap.txt
+   fi
 } 
 
 while true 
@@ -29,3 +44,5 @@ while true
     logFunc
     sleep 2
 done
+
+#TODO compare the cksum output and return a boolean statement if equal
