@@ -2,20 +2,29 @@
 #encripScript
 
 #Step1 Generate a plain text file (boobie trap) in a shared directory
-touch boob.txt
+touch password.txt
+FNAME=password.txt
+touch logTrap.txt
+LOGT=logTrap.txt
 myRandKey=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-echo "$myRandKey" > boob.txt
+echo $myRandKey > $FNAME
   
 #Step2 - Generate md5 hash for the text file and store a string copy(master record) in another text file
-touch password.txt
-FNAME=boob.txt
-md5sum "$FNAME" > password.txt
+md5sum $FNAME > password.txt
 EncFNAME=password.txt
 mkdir profileLog
 cp password.txt profileLog/
 trapPath=profileLog/password.txt
 
-#Step3 Compare hash on the boobie trap with the string file(master record) 
-./foobar.sh "$EncFNAME" "$trapPath"
+#Step3 Compare hash on the boobie trap with the string file(master record)
+#every 30 seconds Step 4 write results to log file.   
 
-#Step4 Create log file to keep track of results. (To Be Continued) 
+logFunc() {
+   cksum $EncFNAME $trapPath >> logTrap.txt
+} 
+
+while true 
+  do 
+    logFunc
+    sleep 2
+done
