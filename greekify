@@ -18,7 +18,7 @@ cp password.txt $1
 trapPath="$1/password.txt"
 
 #Step3 Compare hash on the boobie trap with the string file(master record)
-#every 30 seconds Step 4 write results to log file.   
+#every n seconds Step 4 write results to log file.   
 
 logFunc() {
    cksum $EncFNAME $trapPath >> logTrap.txt
