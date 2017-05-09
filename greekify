@@ -11,7 +11,7 @@ LOGT=logTrap.txt
 if [ ! -f $FNAME ]; then 
   touch logTrap.txt
 fi
-#write random key to file if file is empty
+#write random phrase to file if file is empty
 myRandKey=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 if [ -s $FNAME ]; then 
   echo $myRandKey > $FNAME
@@ -34,8 +34,10 @@ logFunc() {
    echo "$(date)" >> logTrap.txt | cksum $EncFNAME $trapPath >> logTrap.txt
    if diff $EncFNAME $trapPath >/dev/null ; then
      echo "\nThe files are the same" >> logTrap.txt
+     return 0
    else
      echo "\nWARNING!: The files are different" >> logTrap.txt
+     return 1
    fi
 } 
 
@@ -44,5 +46,3 @@ while true
     logFunc
     sleep 2
 done
-
-#TODO compare the cksum output and return a boolean statement if equal
