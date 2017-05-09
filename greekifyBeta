@@ -1,50 +1,59 @@
-#!/bin/bash 
-#encripScript
+#!/bin/bash
 
-#Step1 Generate a plain text file (boobie trap) in a shared directory
+#This script takes 2 parameters: 
+#1st Parameter: directory of file path to be watched
+#2nd Parameter: time lapse between file comparison(seconds)
+
+string1="Alert! Crypto-attack!"
+string2="Investigate ASAP"
+string3="Passed Crypto Check."
+string4="Ignore."
+string5="Anti-Crypto Log"
+string6="Anti-Crypto"
+
+#Generate a plain text file (boobie trap) in a shared directory
 FNAME=password.txt
-if [ ! -f $FNAME ]; then 
+if [ ! -f $FNAME ]; then
+  logger $string5 Creating initial file
   touch password.txt
 fi
-#Generate log file
-LOGT=logTrap.txt
-if [ ! -f $FNAME ]; then 
-  touch logTrap.txt
-fi
+
 #write random phrase to file if file is empty
 #masterKey=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1) #random key 
 masterKey='ebedcb11e719fcc27d313c2543a9263ce25d55a0' #hard coded key 
-if [ -s $FNAME ]; then 
+if [ -s $FNAME ]; then
   echo $masterKey > $FNAME
 fi
-  
+
 #Step2 - Generate md5 hash for the text file and store a string copy(master record) in another text file
 md5sum $FNAME > password.txt
 EncFNAME=password.txt
 
 #accepts a parameter as target directory
-targetDir=$1 
+targetDir=$1
 trapPath="$1/password.txt"
-if [ ! -f $trapPath ]; then 
+if [ ! -f $trapPath ]; then
   cp password.txt $1
 fi
 
 #Step3 Compare hash on the boobie trap with the string file(master record)
 #every n seconds Step 4 write results to log file.   
-
 logFunc() {
-   echo "$(date)" >> logTrap.txt | cksum $EncFNAME $trapPath >> logTrap.txt
+   status=$(cksum $EncFNAME $trapPath)
+   logger ${status}
    if diff $EncFNAME $trapPath >/dev/null ; then
-     echo "\nThe files are the same" >> logTrap.txt
+     logger $string3 
      return 0
    else
-     echo "\nWARNING!: The files are different" >> logTrap.txt
+     logger $string1
      return 1
    fi
-} 
+}
 
+#compare inital file and watch file every n seconds. 
 while true 
-  do 
-    logFunc
-    sleep 2
+  do
+   logFunc
+    sleep $2
 done
+
