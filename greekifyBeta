@@ -8,19 +8,20 @@ string1="Alert! Crypto-attack!"
 string2="Investigate ASAP"
 string3="Passed Crypto Check."
 string4="Ignore."
-string5="Anti-Crypto Log"
+string5="Anti-Crypto Log:"
 string6="Anti-Crypto"
 
 #Generate a plain text file (boobie trap) in a shared directory
 FNAME=password.txt
 if [ ! -f $FNAME ]; then
-  logger $string5 Creating initial file
+  logger $string5 Creating initial file -p WARNING -t $string6  
   touch password.txt
 fi
 
-#write random phrase to file if file is empty
-#masterKey=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1) #random key 
+#Generate master key and key hash 
 masterKey='ebedcb11e719fcc27d313c2543a9263ce25d55a0' #hard coded key 
+MasterHash=echo -n $masterkey | md5sum # turn key into hash
+
 if [ -s $FNAME ]; then
   echo $masterKey > $FNAME
 fi
@@ -31,9 +32,11 @@ EncFNAME=password.txt
 
 #accepts a parameter as target directory
 targetDir=$1
-trapPath="$1/password.txt"
+trapPath="$1"
 if [ ! -f $trapPath ]; then
-  cp password.txt $1
+ 
+ 
+ cp password.txt $1
 fi
 
 #Step3 Compare hash on the boobie trap with the string file(master record)
@@ -51,9 +54,9 @@ logFunc() {
 }
 
 #compare inital file and watch file every n seconds. 
-while true 
-  do
-   logFunc
-    sleep $2
-done
+# while true 
+#   do
+#    logFunc
+#     sleep $2
+# done
 
